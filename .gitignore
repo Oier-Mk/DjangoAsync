@@ -2,5 +2,5 @@
 **.DS_Store
 # ignore .vscode folder
 .vscode/
-#ignore the pychache folders wherever they are
-**__pycache__/
+#ignore the pychache files pyc
+**.pyc
