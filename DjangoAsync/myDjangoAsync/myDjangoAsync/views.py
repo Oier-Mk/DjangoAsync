@@ -10,7 +10,10 @@ def index(request):
 
 
 def check(request):
-    return HttpResponse("using {}".format(os.environ.get('SERVER_GATEWAY_INTERFACE')))
+    if (os.environ.get('SERVER_GATEWAY_INTERFACE') == "Web"):
+        return HttpResponse("using WSGI")
+    else:
+        return HttpResponse("using ASGI")
 
 
 def test1(request):
