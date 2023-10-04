@@ -3,7 +3,6 @@ from django.http import HttpResponse
 import time
 from datetime import datetime
 import os
-from celery import shared_task
 
 
 def index(request):
@@ -11,16 +10,18 @@ def index(request):
 
 
 def check(request):
-    return HttpResponse("using {}".format(os.environ.get('SERVER_GATEWAY_INTERFACE')))
+    if (os.environ.get('SERVER_GATEWAY_INTERFACE') == "Web"):
+        return HttpResponse("using WSGI")
+    else:
+        return HttpResponse("using ASGI")
 
 
-@shared_task
-async def test1(request):
+def test1(request):
     start_time = time.time()
     start_time_readable = datetime.fromtimestamp(
         start_time).strftime('%Y-%m-%d %H:%M:%S')
     print("Starting time: " + str(start_time_readable))
-    await time.sleep(10)
+    time.sleep(10)
     # i = 0
     # while time.time() < start_time + 10:
     #     print(i)
@@ -30,6 +31,4 @@ async def test1(request):
         end_time).strftime('%Y-%m-%d %H:%M:%S')
     print("Ending time: " + str(end_time_readable))
     duration_in_seconds = end_time - start_time
-    result = "Hello world! \nDuration: "+str(duration_in_seconds)+" \nStarting time: " + str(
-        start_time_readable) + "\nEnding time: " + str(end_time_readable)
-    return HttpResponse(result)
+    return HttpResponse("Hello world! \nDuration: "+str(duration_in_seconds)+" \nStarting time: " + str(start_time_readable) + "\nEnding time: " + str(end_time_readable))
