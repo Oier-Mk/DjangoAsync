@@ -4,5 +4,3 @@
 .vscode/
 #ignore the pychache files pyc
 **.pyc
-#ignore the __pycache__ folder
-__pycache__/
