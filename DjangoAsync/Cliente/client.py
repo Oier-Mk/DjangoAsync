@@ -98,8 +98,5 @@ async def main():
     await calc_time(async_calls,urls, asyn=True)
 
     print("----------FIN----------")
-# Ejecutar el bucle de eventos de asyncio
+
 asyncio.run(main())
-# asyncio.run(async_call('http://127.0.0.1:8000/test1/'))
-# url = 'http://127.0.0.1:8000/'
-# sync_call(url)
