@@ -24,5 +24,7 @@ urlpatterns = [
     path('get2/', views.get2),
     path('get3/', views.get3),
     path('get4/', views.get4),
+    path('post1/', views.post1),
+    path('post2/', views.post2),
     path('check/', views.check),
 ]

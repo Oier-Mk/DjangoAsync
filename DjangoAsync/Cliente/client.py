@@ -4,6 +4,7 @@ import os
 import asyncio
 import time
 from datetime import datetime
+import json
 
 
 async def calc_time(func, *args, asyn=False, verbose=True):
@@ -42,28 +43,57 @@ async def calc_time(func, *args, asyn=False, verbose=True):
     return res
 
 
-def sync_call(url):
+def sync_get(url):
     response = r.get(url)
     return response
 
 
-def sync_calls(urls):
+def sync_post(url, data):
+    response = r.post(url, data=json.dumps(data))
+    return response
+
+
+def sync_gets(urls):
     responses = []
     for u in urls:
-        responses.append(sync_call(u))
+        responses.append(sync_get(u))
     return responses
 
 
-async def async_call(url):
+def sync_posts(urls, data_list):
+    responses = []
+    for u, d in zip(urls, data_list):
+        responses.append(sync_post(u, d))
+    return responses
+
+
+async def async_get(url):
     async with httpx.AsyncClient() as client:
         response = await client.get(url, timeout=30)
         return response
 
 
-async def async_calls(urls):
+async def async_post(url, data):
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, data=json.dumps(data), timeout=30)
+        return response
+
+
+async def async_gets(urls):
     tasks = []
     for u in urls:
-        tasks.append(asyncio.create_task(async_call(u)))
+        tasks.append(asyncio.create_task(async_get(u)))
+    # Run the tasks:
+    res = []
+    for t in tasks:
+        res.append(await t)
+    return res
+
+
+async def async_posts(urls, data_list):
+    tasks = []
+    for u, d in zip(urls, data_list):
+        tasks.append(asyncio.create_task(async_post(u, d)))
     # Run the tasks:
     res = []
     for t in tasks:
@@ -77,85 +107,198 @@ async def main():
 
     print("----------ASYNC----------")
 
-    urls = [
-        main_url + 'test1/',
-        main_url + 'test2/',
-    ]
+    # urls = [
+    #     main_url + 'get1/',
+    #     main_url + 'get2/',
+    # ]
 
-    res = await calc_time(async_calls, urls, asyn=True)
-    print("Response:", res)
+    # res = await calc_time(async_gets, urls, asyn=True)
+    # print("Response:", res)
+
+    # print("--------------------")
+
+    # urls = [
+    #     main_url + 'get2/',
+    #     main_url + 'get1/',
+    # ]
+
+    # res = await calc_time(async_gets, urls, asyn=True)
+    # print("Response:", res)
+
+    # print("--------------------")
+
+    # urls = [
+    #     main_url + 'get1/',
+    #     main_url + 'get1/',
+    # ]
+
+    # res = await calc_time(async_gets, urls, asyn=True)
+    # print("Response:", res)
+
+    # print("--------------------")
+
+    # urls = [
+    #     main_url + 'get2/',
+    #     main_url + 'get2/',
+    # ]
+
+    # res = await calc_time(async_gets, urls, asyn=True)
+    # print("Response:", res)
+
+    # print("--------------------")
+    # urls = [
+    #     main_url + 'get4/',
+    #     main_url + 'get4/',
+    # ]
+
+    # res = await calc_time(async_gets, urls, asyn=True)
+    # # Print the responses with the json attached in a readable way. (code\njson)
+    # print("Responses: {}".format(
+    #     '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
 
     print("--------------------")
-
+    # NOW THE POST REQUESTS
     urls = [
-        main_url + 'test2/',
-        main_url + 'test1/',
+        main_url + 'post1/',
+        main_url + 'post2/',
     ]
 
-    res = await calc_time(async_calls, urls, asyn=True)
-    print("Response:", res)
+    # The data to send
+    data = {
+        'names': ['Danel', 'Ander', 'Iñigo', 'Oier']
+    }
+
+    data_list = [data, data]
+
+    res = await calc_time(async_posts, urls, data_list, asyn=True)
+
+    # Print the responses with the json attached in a readable way. (code\njson)
+    print("Responses: {}".format(
+        '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
 
     print("--------------------")
-
     urls = [
-        main_url + 'test1/',
-        main_url + 'test1/',
+        main_url + 'post2/',
+        main_url + 'post2/',
     ]
 
-    res = await calc_time(async_calls, urls, asyn=True)
-    print("Response:", res)
+    # The data to send
+    data = {
+        'names': ['Danel', 'Ander', 'Iñigo', 'Oier']
+    }
 
-    print("--------------------")
+    data_list = [data, data]
 
-    urls = [
-        main_url + 'test2/',
-        main_url + 'test2/',
-    ]
+    res = await calc_time(async_posts, urls, data_list, asyn=True)
 
-    res = await calc_time(async_calls, urls, asyn=True)
-    print("Response:", res)
+    # Print the responses with the json attached in a readable way. (code\njson)
+    print("Responses: {}".format(
+        '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
 
     print("----------SYNC----------")
 
     urls = [
-        main_url + 'test1/',
-        main_url + 'test2/',
+        main_url + 'get1/',
+        main_url + 'get2/',
     ]
 
-    res = await calc_time(sync_calls, urls, asyn=False)
+    res = await calc_time(sync_gets, urls, asyn=False)
     print("Response:", res)
 
     print("--------------------")
 
     urls = [
-        main_url + 'test2/',
-        main_url + 'test1/',
+        main_url + 'get2/',
+        main_url + 'get1/',
     ]
 
-    res = await calc_time(sync_calls, urls, asyn=False)
+    res = await calc_time(sync_gets, urls, asyn=False)
     print("Response:", res)
 
     print("--------------------")
 
     urls = [
-        main_url + 'test1/',
-        main_url + 'test1/',
+        main_url + 'get1/',
+        main_url + 'get1/',
     ]
 
-    res = await calc_time(sync_calls, urls, asyn=False)
+    res = await calc_time(sync_gets, urls, asyn=False)
     print("Response:", res)
 
     print("--------------------")
 
     urls = [
-        main_url + 'test2/',
-        main_url + 'test2/',
+        main_url + 'get2/',
+        main_url + 'get2/',
     ]
 
-    res = await calc_time(sync_calls, urls, asyn=False)
+    res = await calc_time(sync_gets, urls, asyn=False)
     print("Response:", res)
+
+    print("--------------------")
+    # NOW THE JSON RESPONSES
+    urls = [
+        main_url + 'get3/',
+        main_url + 'get4/',
+    ]
+
+    res = await calc_time(sync_gets, urls, asyn=False)
+    # Print the responses with the json attached in a readable way. (code\njson)
+    print("Responses: {}".format(
+        '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
+
+    print("--------------------")
+    urls = [
+        main_url + 'get3/',
+        main_url + 'get3/',
+    ]
+
+    res = await calc_time(sync_gets, urls, asyn=False)
+    # Print the responses with the json attached in a readable way. (code\njson)
+    print("Responses: {}".format(
+        '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
+
+    print("--------------------")
+    # NOW THE POST REQUESTS
+    urls = [
+        main_url + 'post1/',
+        main_url + 'post2/',
+    ]
+
+    # The data to send
+    data = {
+        'names': ['Danel', 'Ander', 'Iñigo', 'Oier']
+    }
+
+    data_list = [data, data]
+
+    res = await calc_time(sync_posts, urls, data_list, asyn=False)
+
+    # Print the responses with the json attached in a readable way. (code\njson)
+    print("Responses: {}".format(
+        '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
+
+    print("--------------------")
+    urls = [
+        main_url + 'post2/',
+        main_url + 'post2/',
+    ]
+
+    # The data to send
+    data = {
+        'names': ['Danel', 'Ander', 'Iñigo', 'Oier']
+    }
+
+    data_list = [data, data]
+
+    res = await calc_time(sync_posts, urls, data_list, asyn=False)
+
+    # Print the responses with the json attached in a readable way. (code\njson)
+    print("Responses: {}".format(
+        '\n'.join([str(r.status_code) + '\n' + str(r.json()) for r in res])))
 
     print("----------FIN----------")
+
 # Ejecutar el bucle de eventos de asyncio
 asyncio.run(main())
 # asyncio.run(async_call('http://127.0.0.1:8000/test1/'))
