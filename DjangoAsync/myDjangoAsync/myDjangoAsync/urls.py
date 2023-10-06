@@ -20,7 +20,9 @@ from myDjangoAsync import views
 urlpatterns = [
     path('', views.index),
     path('admin/', admin.site.urls),
-    path('test1/', views.test1),
-    path('test2/', views.test2),
+    path('get1/', views.get1),
+    path('get2/', views.get2),
+    path('get3/', views.get3),
+    path('get4/', views.get4),
     path('check/', views.check),
 ]
