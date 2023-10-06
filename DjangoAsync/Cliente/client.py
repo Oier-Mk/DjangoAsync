@@ -5,6 +5,7 @@ import asyncio
 import time
 from datetime import datetime
 
+
 async def calc_time(func, *args, asyn=False, verbose=True):
     '''
     Wrapper for calculating how much time does the func take
@@ -16,12 +17,14 @@ async def calc_time(func, *args, asyn=False, verbose=True):
     if verbose:
         print("Starting time:", start_time_readable)
 
+    res = None
+
     # Call the function with provided arguments
     if asyn:
-        await func(*args)
+        res = await func(*args)
     else:
-        func(*args)
-        
+        res = func(*args)
+
     # Get end time and calculate duration
     end_time = time.time()
     end_time_readable = datetime.fromtimestamp(
@@ -36,16 +39,26 @@ async def calc_time(func, *args, asyn=False, verbose=True):
             start_time_readable,
             end_time_readable
         ))
+    return res
 
 
 def sync_call(url):
     response = r.get(url)
     return response
 
+
+def sync_calls(urls):
+    responses = []
+    for u in urls:
+        responses.append(sync_call(u))
+    return responses
+
+
 async def async_call(url):
     async with httpx.AsyncClient() as client:
-        response = await client.get(url, timeout = 30)
+        response = await client.get(url, timeout=30)
         return response
+
 
 async def async_calls(urls):
     tasks = []
@@ -55,47 +68,92 @@ async def async_calls(urls):
     res = []
     for t in tasks:
         res.append(await t)
-    #FIXME: res no se usa
+    return res
+
 
 async def main():
     # URL de la API en tu servidor local
     main_url = 'http://127.0.0.1:8000/'
 
-    print("----------COMIENZO----------")
-    
-    urls=[
+    print("----------ASYNC----------")
+
+    urls = [
         main_url + 'test1/',
         main_url + 'test2/',
     ]
 
-    await calc_time(async_calls,urls, asyn=True)
+    res = await calc_time(async_calls, urls, asyn=True)
+    print("Response:", res)
 
     print("--------------------")
-    
-    urls=[
+
+    urls = [
         main_url + 'test2/',
         main_url + 'test1/',
     ]
 
-    await calc_time(async_calls,urls, asyn=True)
-
-    print("--------------------")    
-
-    urls=[
-        main_url + 'test1/',
-        main_url + 'test1/',
-    ]
-
-    await calc_time(async_calls,urls, asyn=True)
+    res = await calc_time(async_calls, urls, asyn=True)
+    print("Response:", res)
 
     print("--------------------")
-        
-    urls=[
+
+    urls = [
+        main_url + 'test1/',
+        main_url + 'test1/',
+    ]
+
+    res = await calc_time(async_calls, urls, asyn=True)
+    print("Response:", res)
+
+    print("--------------------")
+
+    urls = [
         main_url + 'test2/',
         main_url + 'test2/',
     ]
 
-    await calc_time(async_calls,urls, asyn=True)
+    res = await calc_time(async_calls, urls, asyn=True)
+    print("Response:", res)
+
+    print("----------SYNC----------")
+
+    urls = [
+        main_url + 'test1/',
+        main_url + 'test2/',
+    ]
+
+    res = await calc_time(sync_calls, urls, asyn=False)
+    print("Response:", res)
+
+    print("--------------------")
+
+    urls = [
+        main_url + 'test2/',
+        main_url + 'test1/',
+    ]
+
+    res = await calc_time(sync_calls, urls, asyn=False)
+    print("Response:", res)
+
+    print("--------------------")
+
+    urls = [
+        main_url + 'test1/',
+        main_url + 'test1/',
+    ]
+
+    res = await calc_time(sync_calls, urls, asyn=False)
+    print("Response:", res)
+
+    print("--------------------")
+
+    urls = [
+        main_url + 'test2/',
+        main_url + 'test2/',
+    ]
+
+    res = await calc_time(sync_calls, urls, asyn=False)
+    print("Response:", res)
 
     print("----------FIN----------")
 # Ejecutar el bucle de eventos de asyncio
